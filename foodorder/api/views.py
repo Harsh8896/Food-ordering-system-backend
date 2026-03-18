@@ -365,11 +365,11 @@ def food_pickup(request):
     serializer = OrderSummarySerializer(orders, many=True)
     return Response(serializer.data)
 
-@api_view(['GET'])
-def food_delivered(request):
-    orders = OrderAddress.objects.filter(order_final_status="Food Delivered").order_by('-order_time')
-    serializer = OrderSummarySerializer(orders, many=True)
-    return Response(serializer.data)
+# @api_view(['GET'])
+# def food_delivered(request):
+#     orders = OrderAddress.objects.filter(order_final_status="Food Delivered").order_by('-order_time')
+#     serializer = OrderSummarySerializer(orders, many=True)
+#     return Response(serializer.data)
 
 @api_view(['GET'])
 def order_cancelled(request):
@@ -854,3 +854,12 @@ def delete_review(request, id):
         return Response({"message": "Review deleted successfully"}, status=200)
     except Review.DoesNotExist:
         return Response({"message": "Review not found"}, status=404)
+    
+
+@api_view(['GET'])
+def food_delivered(request):
+    delivered_orders = OrderAddress.objects.filter(order_final_status="Food Delivered")
+    order_numbers = delivered_orders.values_list('order_number', flat=True)
+    orders = Order.objects.filter(order_number__in=order_numbers).select_related('user', 'food')
+    serializer = OrderDeliveredSerializer(orders, many=True)
+    return Response(serializer.data)

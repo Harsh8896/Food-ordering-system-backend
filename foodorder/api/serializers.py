@@ -105,3 +105,16 @@ class ReviewSerializer(serializers.ModelSerializer):
 
     def get_user_name(self, obj):
         return f"{obj.user.first_name} {obj.user.last_name}"
+    
+class OrderDeliveredSerializer(serializers.ModelSerializer):
+    # Foreign Key ke zariye user ka naam uthana
+    user_name = serializers.CharField(source='user.first_name', read_only=True)
+    
+    # Foreign Key ke zariye food ka naam aur price uthana
+    # (Dhyan rahe: Ye tabhi kaam karega agar serializer ka 'model' Order hai)
+    food_name = serializers.CharField(source='food.item_name', read_only=True)
+    price = serializers.DecimalField(source='food.item_price', max_digits=10, decimal_places=2, read_only=True)
+
+    class Meta:
+        model = Order  # Humne yahan OrderAddress ki jagah Order model use kiya hai
+        fields = ['order_number', 'user_name', 'food_name', 'price']
