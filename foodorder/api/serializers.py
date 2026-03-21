@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from .models import *
+from datetime import date
 
 class CategorySerializers(serializers.ModelSerializer):
     class Meta:
@@ -8,11 +9,18 @@ class CategorySerializers(serializers.ModelSerializer):
 
 class FoodSerializers(serializers.ModelSerializer):
     category_name = serializers.CharField(source='category.category_name', read_only=True)
+    restaurant_name = serializers.CharField(source='restaurant.name', read_only=True)  # ← ye add karo
     image = serializers.ImageField(required=False)
     is_available = serializers.BooleanField(default=True)
+
     class Meta:
         model = Food
-        fields = ['id', 'category', 'category_name', 'item_name', 'item_price', 'item_description', 'image', 'item_quantity', 'is_available']
+        fields = [
+            'id', 'category', 'category_name',
+            'restaurant', 'restaurant_name',       # ← ye add karo
+            'item_name', 'item_price', 'item_description',
+            'image', 'item_quantity', 'is_available'
+        ]
 
 
 
@@ -118,3 +126,24 @@ class OrderDeliveredSerializer(serializers.ModelSerializer):
     class Meta:
         model = Order  # Humne yahan OrderAddress ki jagah Order model use kiya hai
         fields = ['order_number', 'user_name', 'food_name', 'price']
+
+
+class RestaurantSerializer(serializers.ModelSerializer):
+    days_left = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Restaurant
+        fields = [
+            'id', 'name', 'owner_email', 'owner_password',
+            'location', 'subscription_plan', 'subscription_expiry',
+            'status', 'created_date', 'days_left'
+        ]
+
+    def get_days_left(self, obj):
+        delta = obj.subscription_expiry - date.today()
+        return delta.days
+    
+class PlatformSettingsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PlatformSettings
+        fields = '__all__'

@@ -15,24 +15,23 @@ class User(models.Model):
     
 
 class Category(models.Model):
+    restaurant = models.ForeignKey('Restaurant', on_delete=models.CASCADE, null=True, blank=True)  # ← 'Restaurant' string mein
     category_name = models.CharField(max_length=50, null=True)
     creation_date = models.DateTimeField(auto_now_add=True)
-
 
     def __str__(self):
         return self.category_name
     
 
 class Food(models.Model):
+    restaurant = models.ForeignKey("Restaurant", on_delete=models.CASCADE, null=True, blank=True)  # ← ye add karo
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
     item_name = models.CharField(max_length=50)
     item_price = models.DecimalField(max_digits=10, decimal_places=2)
     item_description = models.TextField(max_length=500, null=True, blank=True)
-    image = models.ImageField(upload_to="food_images/",)
+    image = models.ImageField(upload_to="food_images/")
     item_quantity = models.CharField(max_length=50)
     is_available = models.BooleanField(default=True)
-
-
     reg_gdate = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -118,3 +117,47 @@ class Wishlist(models.Model):
 
     def __str__(self):
         return f"{self.user.first_name} for {self.food.item_name} - {self.rating} stars"
+
+
+from django.contrib.auth.models import User as DjangoUser
+
+class Restaurant(models.Model):
+    PLAN_CHOICES = [
+        ('Basic', 'Basic'),
+        ('Standard', 'Standard'),
+        ('Premium', 'Premium'),
+    ]
+    STATUS_CHOICES = [
+        ('active', 'Active'),
+        ('suspended', 'Suspended'),
+    ]
+
+    owner = models.OneToOneField(DjangoUser, on_delete=models.SET_NULL, null=True, blank=True)  # ← ye add karo
+    name = models.CharField(max_length=100)
+    owner_email = models.EmailField(unique=True)
+    owner_password = models.CharField(max_length=200)
+    location = models.CharField(max_length=200)
+    subscription_plan = models.CharField(max_length=20, choices=PLAN_CHOICES, default='Standard')
+    subscription_expiry = models.DateField()
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='active')
+    created_date = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.name
+    
+
+
+class PlatformSettings(models.Model):
+    brand_name = models.CharField(max_length=100, default='FoodSys')
+    brand_logo_url = models.URLField(blank=True)
+    platform_currency = models.CharField(max_length=10, default='USD')
+    currency_symbol = models.CharField(max_length=5, default='$')
+    support_email = models.EmailField(default='support@foodsys.com')
+    support_phone = models.CharField(max_length=20, default='+1-800-FOODSYS')
+    platform_timezone = models.CharField(max_length=50, default='America/New_York')
+    maintenance_mode = models.BooleanField(default=False)
+    enable_restaurant_registration = models.BooleanField(default=True)
+    max_restaurants = models.IntegerField(default=500)
+
+    def __str__(self):
+        return self.brand_name
