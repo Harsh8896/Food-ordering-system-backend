@@ -57,4 +57,8 @@ urlpatterns = [
     path('delete_review/<int:id>/', delete_review),
     path('orders-delivered/', food_delivered, name='food_delivered'),
 
+    path('master-foods/', master_food_list),
+    path('master-foods/<int:id>/', master_food_detail),
+    path('delivered-orders/<int:user_id>/', delivered_orders_for_user, name='delivered_orders_for_user'),
+
 ]

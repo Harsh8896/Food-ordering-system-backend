@@ -8,11 +8,19 @@ class CategorySerializers(serializers.ModelSerializer):
 
 class FoodSerializers(serializers.ModelSerializer):
     category_name = serializers.CharField(source='category.category_name', read_only=True)
+    restaurant_name = serializers.CharField(source='restaurant.name', read_only=True)  # ← add
+    restaurant_location = serializers.CharField(source='restaurant.location', read_only=True)
     image = serializers.ImageField(required=False)
     is_available = serializers.BooleanField(default=True)
+
     class Meta:
         model = Food
-        fields = ['id', 'category', 'category_name', 'item_name', 'item_price', 'item_description', 'image', 'item_quantity', 'is_available']
+        fields = [
+            'id', 'category', 'category_name',
+            'restaurant', 'restaurant_name', 'restaurant_location',   # ← add
+            'item_name', 'item_price', 'item_description',
+            'image', 'item_quantity', 'is_available'
+        ]
 
 
 
@@ -118,3 +126,17 @@ class OrderDeliveredSerializer(serializers.ModelSerializer):
     class Meta:
         model = Order  # Humne yahan OrderAddress ki jagah Order model use kiya hai
         fields = ['order_number', 'user_name', 'food_name', 'price']
+
+
+class RestaurantSerializer(serializers.ModelSerializer):
+    days_left = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Restaurant
+        fields = '__all__'
+
+    def get_days_left(self, obj):
+        from datetime import date
+        return (obj.subscription_expiry - date.today()).days
+
+
